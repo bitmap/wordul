@@ -1,0 +1,55 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:root {
+  font-size: 14px;
+
+  --border-width: 0.125rem;
+  --radius: 0.5rem;
+  --gap: 0.5rem;
+  --width: calc(32rem + (var(--gap) * 4));
+
+  --alpha-80: 0.8;
+  --alpha-50: 0.5;
+  --alpha-20: 0.2;
+
+  --dark: 59, 59, 76;
+  --lite: 247, 247, 255;
+  --blue: 17, 138, 178;
+  --red: 239, 71, 111;
+  --yellow: 255, 209, 102;
+  --green: 6, 214, 160;
+
+  --foreground: var(--dark);
+  --background: var(--lite);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground: var(--lite);
+    --background: var(--dark);
+  }
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+  font-family: -apple-system, sans-serif;
+  height: 100%;
+  color: rgb(var(--foreground));
+  background-color: rgb(var(--background));
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+#__next {
+  display: flex;
+  height: 100%;
+}
