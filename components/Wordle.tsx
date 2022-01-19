@@ -143,6 +143,12 @@ export default function Wordle() {
             ) : state.guessedTooMany ? (
               <strong>{ANSWER.toUpperCase()}</strong>
             ) : null}
+            <div
+              className={styles.restart}
+              onClick={() => dispatch({ type: Actions.RESET })}
+            >
+              Play again?
+            </div>
           </div>
         ) : (
           <form

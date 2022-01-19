@@ -171,3 +171,10 @@
 .help:hover {
   color: rgba(var(--foreground), var(--alpha-80));
 }
+
+.restart {
+  cursor: pointer;
+  margin-top: var(--gap);
+  color: rgb(var(--green));
+  text-align: center;
+}
