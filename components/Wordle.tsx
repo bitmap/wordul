@@ -1,47 +1,18 @@
-import { useEffect, useRef, useState } from "react";
-import { classNames } from "../lib/utils";
+import { useEffect, useReducer, useRef, useState } from "react";
+import { WORD_LENGTH, TOTAL_GUESSES } from "../lib/constants";
 import { answerList, allowList } from "../lib/words";
+import { reducer, initialState, Actions } from "../lib/state";
+import { classNames } from "../lib/utils";
+import type { Guess } from "../lib/types/guess";
 import styles from "../styles/Wordle.module.css";
-
-interface Guess {
-  /** The index of the letter in the string */
-  index: number;
-  /** The letter */
-  value: string;
-  /** Letter is in the correct index */
-  isCorrect: boolean;
-  /** Letter is in answer, but not in correct index */
-  isIncluded: boolean;
-  /** Letter is not empty */
-  isEmpty: boolean;
-}
-
-type GuessRow = Guess[];
 
 // Constants
 const FORM_NAME = "GUESS";
-const WORD_LENGTH = 5;
-const TOTAL_GUESSES = 6;
 const ALL_WORDS = answerList.concat(allowList);
 const ANSWER = answerList[Math.floor(Math.random() * answerList.length)];
 
-/** An array of empty guesses (one row) */
-const emptyGuesses: GuessRow = Array.from(
-  { length: WORD_LENGTH },
-  (value: string = "", index: number): Guess => ({
-    index,
-    value,
-    isCorrect: false,
-    isIncluded: false,
-    isEmpty: true,
-  })
-);
-
-/** Initial grid state */
-const initialState: GuessRow[] = new Array(TOTAL_GUESSES).fill(emptyGuesses);
-
 /** Compares user's guess to the answer and creates a new `GuessRow` for the grid. */
-export function makeGuess(guess: string, answer: string): GuessRow {
+export function makeGuess(guess: string, answer: string): Guess[] {
   // Split the string and map each letter to a Guess
   return guess.split("").map<Guess>((value, index) => {
     const isCorrect = answer.charAt(index) === value;
@@ -59,7 +30,7 @@ export function makeGuess(guess: string, answer: string): GuessRow {
 }
 
 /** Grid of letters */
-function TileGrid({ guesses }: { guesses: GuessRow[] }) {
+function TileGrid({ guesses }: { guesses: Guess[][] }) {
   return (
     <div className={styles.grid}>
       {guesses.map((letters) =>
@@ -83,11 +54,7 @@ function TileGrid({ guesses }: { guesses: GuessRow[] }) {
 
 /** Wordle: A word game */
 export default function Wordle() {
-  const [currentGuess, setCurrentGuess] = useState(0);
-  const [guesses, setGuesses] = useState(initialState);
-  const [guessedCorrect, setGuessedCorrect] = useState(false);
-  const [guessedTooMany, setGuessedTooMany] = useState(false);
-  const [errorText, setErrorText] = useState("");
+  const [state, dispatch] = useReducer(reducer, initialState);
 
   // Input ref used to focus when game initilaizes
   const input = useRef<HTMLInputElement>(null);
@@ -100,24 +67,24 @@ export default function Wordle() {
 
     // Make sure word is the exact length
     if (guess.length !== WORD_LENGTH) {
-      setErrorText(`Guess must be ${WORD_LENGTH} letters`);
+      dispatch({
+        type: Actions.SET_ERROR,
+        payload: `Guess must be ${WORD_LENGTH} letters`,
+      });
     }
 
     // Make sure word is valid
     else if (!ALL_WORDS.includes(guess)) {
-      setErrorText(`"${guess.toUpperCase()}" is not a valid word!`);
+      dispatch({
+        type: Actions.SET_ERROR,
+        payload: `"${guess.toUpperCase()}" is not a valid word!`,
+      });
     }
 
     // Update the grid with the user's guess
     else {
-      setGuesses((prevState) => {
-        const newState = [...prevState];
-        newState[currentGuess] = makeGuess(guess, ANSWER);
-        return newState;
-      });
-
-      // Increment currentGuess
-      setCurrentGuess((prevState) => prevState + 1);
+      const newGuess = makeGuess(guess, ANSWER);
+      dispatch({ type: Actions.SET_CURRENT_GUESS, payload: newGuess });
     }
 
     // Reset form
@@ -131,29 +98,31 @@ export default function Wordle() {
 
   // Game side-effects
   useEffect(() => {
-    // Out of guesses
-    if (currentGuess >= TOTAL_GUESSES) {
-      setGuessedTooMany(true);
-    }
+    const lastGuess = state.guesses[state.currentGuess - 1];
 
     // Check if last guess was correct
-    if (guesses[currentGuess - 1]?.every((guess) => guess.isCorrect)) {
-      setGuessedCorrect(true);
+    if (lastGuess?.every((guess) => guess.isCorrect)) {
+      dispatch({ type: Actions.SET_CORRECT });
     }
-  }, [guesses, currentGuess]);
+
+    // Out of guesses
+    if (state.currentGuess >= TOTAL_GUESSES) {
+      dispatch({ type: Actions.SET_TOO_MANY });
+    }
+  }, [state.currentGuess, state.guesses]);
 
   // Hide error text after a few seconds
   useEffect(() => {
-    if (errorText) {
+    if (state.errorText) {
       const timeout = setTimeout(() => {
-        setErrorText("");
+        dispatch({ type: Actions.SET_ERROR, payload: "" });
       }, 2500);
 
       return () => {
         clearTimeout(timeout);
       };
     }
-  }, [errorText]);
+  }, [state.errorText]);
 
   return (
     <main className={styles.container}>
@@ -163,15 +132,15 @@ export default function Wordle() {
       </header>
 
       {/* The grid */}
-      <TileGrid guesses={guesses} />
+      <TileGrid guesses={state.guesses} />
 
       {/* The form and messages */}
       <div className={styles.footer}>
-        {guessedTooMany || guessedCorrect ? (
+        {state.guessedTooMany || state.guessedCorrect ? (
           <div>
-            {guessedCorrect ? (
+            {state.guessedCorrect ? (
               "Nice! You got it! 👏"
-            ) : guessedTooMany ? (
+            ) : state.guessedTooMany ? (
               <strong>{ANSWER.toUpperCase()}</strong>
             ) : null}
           </div>
@@ -190,8 +159,8 @@ export default function Wordle() {
               name={FORM_NAME}
             />
             <button className={styles.button}>Enter</button>
-            {Boolean(errorText) && (
-              <div className={styles.error}>{errorText}</div>
+            {Boolean(state.errorText) && (
+              <div className={styles.error}>{state.errorText}</div>
             )}
           </form>
         )}
