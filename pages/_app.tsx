@@ -6,7 +6,7 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <>
       <Head>
-        <title>Wordle</title>
+        <title>Wordul</title>
         <meta name="description" content="A word game" />
         <link rel="icon" href="/favicon.ico" />
       </Head>

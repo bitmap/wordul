@@ -1,1 +1,1 @@
-export { default } from "../components/Wordle";
+export { default } from "../components/Wordul";

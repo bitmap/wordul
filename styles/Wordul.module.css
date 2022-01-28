@@ -25,6 +25,7 @@
   font-size: 1.25rem;
   margin: var(--gap) 0;
   height: 3.625rem;
+  text-align: center;
 }
 
 .grid {

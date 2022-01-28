@@ -4,7 +4,7 @@ import { answerList, allowList } from "../lib/words";
 import { reducer, initialState, Actions } from "../lib/state";
 import { classNames } from "../lib/utils";
 import type { Guess } from "../lib/types/guess";
-import styles from "../styles/Wordle.module.css";
+import styles from "../styles/Wordul.module.css";
 
 // Constants
 const FORM_NAME = "GUESS";
@@ -52,8 +52,8 @@ function TileGrid({ guesses }: { guesses: Guess[][] }) {
   );
 }
 
-/** Wordle: A word game */
-export default function Wordle() {
+/** Wordul: A word game */
+export default function Wordul() {
   const [state, dispatch] = useReducer(reducer, initialState);
 
   // Input ref used to focus when game initilaizes
@@ -127,7 +127,7 @@ export default function Wordle() {
   return (
     <main className={styles.container}>
       <header className={styles.header}>
-        <h1 className={styles.title}>Wordle</h1>
+        <h1 className={styles.title}>Wordul</h1>
         <Help />
       </header>
 

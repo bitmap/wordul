@@ -1,5 +1,5 @@
 {
-  "name": "wordle",
+  "name": "wordul",
   "private": true,
   "scripts": {
     "dev": "next dev",
